@@ -1,0 +1,50 @@
+{
+  "name": "analyze-image",
+  "version": "1.0.0",
+  "description": "Analyzes an image and detects potential improvements for a webpage",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "jest test/ --coverage --detectOpenHandles"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmetais/analyze-image.git"
+  },
+  "keywords": [
+    "image",
+    "webperf",
+    "performance",
+    "analyze",
+    "phantomas",
+    "test"
+  ],
+  "author": "Gaël Métais",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/gmetais/analyze-image/issues"
+  },
+  "homepage": "https://github.com/gmetais/analyze-image#readme",
+  "dependencies": {
+    "debug": "4.3.4",
+    "file-type": "16.5.3",
+    "is-svg": "3.0.0",
+    "sharp": "0.32.4"
+  },
+  "devDependencies": {
+    "jest": "29.6.2"
+  },
+  "jest": {
+    "verbose": true,
+    "coveragePathIgnorePatterns": [
+      "test/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 100,
+        "branches": 100,
+        "functions": 100,
+        "lines": 100
+      }
+    }
+  }
+}
