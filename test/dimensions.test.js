@@ -1,12 +1,12 @@
 const { describe, it } = require("@jest/globals");
 
-const dimensionsModule = require('../lib/modules/dimensions'),
+const ModulesRunner = require('../lib/modulesRunner'),
     assert = require('assert'),
     fs = require('fs').promises,
     path = require('path');
 
 
-describe('Image type detection', () => {
+describe('Image size detection', () => {
 
     const files = [
         {name: 'svg-image.svg', format: 'svg', width: undefined, height: undefined},
@@ -21,14 +21,9 @@ describe('Image type detection', () => {
     files.forEach(file => {
         it('should detect the dimensions of a ' + file.format + ' image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const res = await dimensionsModule({
-                body: image, 
-                result: {
-                    format: file.format
-                }
-            });
-            assert.strictEqual(res.width, file.width, 'Width is correct');
-            assert.strictEqual(res.height, file.height, 'Height is correct');
+            const res = await ModulesRunner.execModuleForTest('dimensions', image, {}, {}, {stats: {format: file.format}});
+            assert.strictEqual(res.stats.width, file.width, 'Width is correct');
+            assert.strictEqual(res.stats.height, file.height, 'Height is correct');
         });
     });
 });

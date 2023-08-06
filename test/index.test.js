@@ -63,15 +63,15 @@ describe('Image parameter', () => {
         it('should load an SVG image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/svg-image.svg'));
             const res = await analyzeImage(image.toString());
-            assert.strictEqual(res.mimeType, 'image/svg+xml', 'Mime type is correct');
-            assert.strictEqual(res.format, 'svg', 'Format is correct');
+            assert.strictEqual(res.stats.mimeType, 'image/svg+xml', 'Mime type is correct');
+            assert.strictEqual(res.stats.format, 'svg', 'Format is correct');
         });
 
         it('should load a base64 encoded JPEG image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'), {encoding: 'base64'});
             const res = await analyzeImage(image);
-            assert.strictEqual(res.mimeType, 'image/jpeg', 'Mime type is correct');
-            assert.strictEqual(res.format, 'jpg', 'Format is correct');
+            assert.strictEqual(res.stats.mimeType, 'image/jpeg', 'Mime type is correct');
+            assert.strictEqual(res.stats.format, 'jpg', 'Format is correct');
         });
     });
 
@@ -79,16 +79,45 @@ describe('Image parameter', () => {
         it('should load a PNG image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/png-image.png'));
             const res = await analyzeImage(image);
-            assert.strictEqual(res.mimeType, 'image/png', 'Mime type is correct');
-            assert.strictEqual(res.format, 'png', 'Format is correct');
+            assert.strictEqual(res.stats.mimeType, 'image/png', 'Mime type is correct');
+            assert.strictEqual(res.stats.format, 'png', 'Format is correct');
         });
 
         it('should load an SVG inside a buffer', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/svg-image.svg'));
             const buffer = Buffer.from(image, 'base64');
             const res = await analyzeImage(buffer);
-            assert.strictEqual(res.mimeType, 'image/svg+xml', 'Mime type is correct');
-            assert.strictEqual(res.format, 'svg', 'Format is correct');
+            assert.strictEqual(res.stats.mimeType, 'image/svg+xml', 'Mime type is correct');
+            assert.strictEqual(res.stats.format, 'svg', 'Format is correct');
+        });
+    });
+
+    describe('Output format', () => {
+        it('should be respected', async () => {
+            const image = await fs.readFile(path.resolve(__dirname, './images/png-image.png'));
+            const res = await analyzeImage(image, {
+                displayWidth: 200,
+                displayHeight: 100
+            });
+            
+            assert.strictEqual(res.stats.format, 'png');
+            assert.strictEqual(res.stats.mimeType, 'image/png');
+            assert.strictEqual(res.stats.weight, image.length);
+            assert.strictEqual(res.stats.width, 664);
+            assert.strictEqual(res.stats.height, 314);
+            assert.strictEqual(res.stats.animated, false);
+            assert.ok(res.transforms.optimize.weight < image.length);
+            assert.ok(res.transforms.optimize.gainFromOriginal > 0);
+            assert.strictEqual(res.transforms.optimize.gainFromOriginal, image.length - res.transforms.optimize.weight);
+            assert.strictEqual(Buffer.isBuffer(res.transforms.optimize.body), true);
+            assert.strictEqual(res.transforms.optimize.body.length, res.transforms.optimize.weight);
+            assert.ok(res.transforms.resize.weight < image.length);
+            assert.strictEqual(res.transforms.resize.width, 200);
+            assert.strictEqual(res.transforms.resize.height, 100);
+            assert.ok(res.transforms.resize.gainFromOriginal > 0);
+            assert.strictEqual(res.transforms.resize.gainFromOriginal, image.length - res.transforms.resize.weight);
+            assert.strictEqual(Buffer.isBuffer(res.transforms.resize.body), true);
+            assert.strictEqual(res.transforms.resize.body.length, res.transforms.resize.weight);
         });
     });
 });

@@ -1,0 +1,104 @@
+const { describe, it } = require("@jest/globals");
+
+const ModulesRunner = require('../lib/modulesRunner'),
+    optimizeModule = require('../lib/modules/optimize'),
+    assert = require('assert'),
+    fs = require('fs').promises,
+    path = require('path')
+    sharp = require('sharp');
+
+
+describe('Image optimization tools', () => {
+    const files = [
+        {name: 'svg-image.svg', format: 'svg'},
+        {name: 'jpeg-image.jpg', format: 'jpg'},
+        {name: 'png-image.png', format: 'png'},
+        {name: 'animated.gif', format: 'gif'},
+        {name: 'webp-image.webp', format: 'webp'},
+        {name: 'animated.webp', format: 'webp'},
+        {name: 'avif-image.avif', format: 'avif'}
+    ];
+
+    files.forEach(file => {
+        it('should re-encode a ' + file.format + ' image', async () => {
+            const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
+            const newImage = await optimizeModule.optimizeImage(image, file.format, {});
+            assert.ok(newImage.length > 1, 'Image was re-encoded');
+
+            const newContentType = await ModulesRunner.execModuleForTest('contentType', newImage);
+            assert.strictEqual(file.format, newContentType.stats.format, 'Content type is still the same');
+        });
+    });
+});
+
+describe('Optimize module', () => {
+    it('should succeed optimizing a jpg', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
+        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+            format: 'jpg',
+            width: 285,
+            height: 427,
+            weight: image.length
+        }});
+        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+    });
+
+    it('should fail optimizing a jpg if the quality option is too heigh', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
+        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {jpgQuality: 100}, {stats: {
+            format: 'jpg',
+            weight: image.length
+        }});
+        assert.strictEqual(result.transforms.optimize, undefined, 'Optimization failed');
+    });
+
+    it('should succeed optimizing a png', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/png-image.png'));
+        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+            format: 'png',
+            weight: image.length
+        }});
+        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+    });
+
+    it('should succeed optimizing a webp', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/webp-image.webp'));
+        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+            format: 'webp',
+            weight: image.length
+        }});
+        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+    });
+
+    it('should succeed optimizing an animated webp', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/animated.webp'));
+        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {webpQuality: 1}, {stats: {
+            format: 'webp',
+            weight: image.length
+        }});
+        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        const sharpMetadata = await sharp(image).metadata();
+        assert.strictEqual(sharpMetadata.pages, 12, 'The image is still animated');
+    });
+
+    // TODO find an unoptimized test GIF!
+    /*it('should succeed optimizing a gif', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/animated.webp'));
+        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+            format: 'gif',
+            weight: image.length
+        }});
+        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        const sharpMetadata = await sharp(image).metadata();
+        assert.strictEqual(sharpMetadata.pages, 10, 'The image is still animated');
+    });*/
+
+    it('should succeed optimizing an svg', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/svg-image.svg'));
+        const result = await ModulesRunner.execModuleForTest('optimize', image.toString(), {}, {}, {stats: {
+            format: 'svg',
+            weight: image.length
+        }});
+        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+    });
+});

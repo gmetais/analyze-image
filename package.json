@@ -27,6 +27,9 @@
   "dependencies": {
     "debug": "4.3.4",
     "file-type": "16.5.3",
+    "imagemin": "7.0.1",
+    "imagemin-gifsicle": "7.0.0",
+    "imagemin-svgo": "9.0.0",
     "is-svg": "3.0.0",
     "sharp": "0.32.4"
   },

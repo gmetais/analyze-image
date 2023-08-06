@@ -1,12 +1,12 @@
 const { describe, it } = require("@jest/globals");
 
-const dimensionsModule = require('../lib/modules/animated'),
+const ModulesRunner = require('../lib/modulesRunner'),
     assert = require('assert'),
     fs = require('fs').promises,
     path = require('path');
 
 
-describe('Image type detection', () => {
+describe('Animated image detection', () => {
 
     const files = [
         {name: 'svg-image.svg', format: 'svg', animated: undefined},
@@ -21,13 +21,8 @@ describe('Image type detection', () => {
     files.forEach(file => {
         it('should detect if the ' + file.format + ' image is animated', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const res = await dimensionsModule({
-                body: image, 
-                result: {
-                    format: file.format
-                }
-            });
-            assert.strictEqual(res.animated, file.animated, 'Animated property is correct');
+            const res = await ModulesRunner.execModuleForTest('animated', image, {}, {}, {stats: {format: file.format}});
+            assert.strictEqual(res.stats.animated, file.animated, 'Animated property is correct');
         });
     });
 });

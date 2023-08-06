@@ -1,6 +1,6 @@
 const { describe, it } = require("@jest/globals");
 
-const contentTypeModule = require('../lib/modules/contentType'),
+const ModulesRunner = require('../lib/modulesRunner'),
     assert = require('assert'),
     fs = require('fs').promises,
     path = require('path');
@@ -21,20 +21,20 @@ describe('Image type detection', () => {
     files.forEach(file => {
         it('should detect a ' + file.format + ' image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const res = await contentTypeModule({image: image});
-            assert.strictEqual(res.mimeType, file.mimeType, 'Mime type is correct');
-            assert.strictEqual(res.format, file.format, 'Format is correct');
+            const res = await ModulesRunner.execModuleForTest('contentType', image);
+            assert.strictEqual(res.stats.mimeType, file.mimeType, 'Mime type is correct');
+            assert.strictEqual(res.stats.format, file.format, 'Format is correct');
         });
     });
 
     it('should return undefined on unknown file format', async () => {
-        let res = await (contentTypeModule({image: 'foo'}));
-        assert.strictEqual(res.mimeType, undefined, 'Mime type is undefined');
-        assert.strictEqual(res.format, undefined, 'Format is undefined');
+        let res = await ModulesRunner.execModuleForTest('contentType', 'foo');
+        assert.strictEqual(res.stats.mimeType, undefined, 'Mime type is undefined');
+        assert.strictEqual(res.stats.format, undefined, 'Format is undefined');
 
         const file = await fs.readFile(path.resolve(__dirname, './images/pdf-file.pdf'));
-        res = await contentTypeModule({image: file});
-        assert.strictEqual(res.mimeType, undefined, 'Mime type is undefined');
-        assert.strictEqual(res.format, undefined, 'Format is undefined');
+        res = await ModulesRunner.execModuleForTest('contentType', file);
+        assert.strictEqual(res.stats.mimeType, undefined, 'Mime type is undefined');
+        assert.strictEqual(res.stats.format, undefined, 'Format is undefined');
     });
 });
