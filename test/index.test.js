@@ -102,7 +102,7 @@ describe('Image parameter', () => {
                 viewportHeight: 800,
                 html: '<picture><source media="(max-width: 600px)" srcset="image3.jpg 30w" sizes="100vw" /><img srcset="image1.jpg 10w,image2.jpg 20w" sizes="5vw" /></picture>'
             });
-            
+            console.log(res.stats);
             // Stats
             assert.strictEqual(res.stats.format, 'jpg');
             assert.strictEqual(res.stats.mimeType, 'image/jpeg');
@@ -112,6 +112,8 @@ describe('Image parameter', () => {
             assert.strictEqual(res.stats.animated, false);
             assert.strictEqual(res.stats.sizesAttribute, '5vw');
             assert.strictEqual(res.stats.srcsetAttribute, 'image1.jpg 10w, image2.jpg 20w');
+            assert.strictEqual(res.stats.displayDensity.toFixed(4), '2.8475');
+            assert.strictEqual(res.stats.displayRatio.toFixed(4), '2.8475');
 
             // Transforms
             assert.ok(res.transforms.optimized.weight < image.length);
@@ -150,8 +152,11 @@ describe('Image parameter', () => {
             assert.ok(res.offenders.imageOldFormat.webpWeight > 0);
             assert.ok(res.offenders.imageOldFormat.avifWeight > 0);
 
-            assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 60);
+            assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 60);
             assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
+
+            assert.strictEqual(res.offenders.imageExcessiveDensity.displayDensity.toFixed(4), '2.8475');
+            assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedMaxDensity, 2);
         });
     });
 });

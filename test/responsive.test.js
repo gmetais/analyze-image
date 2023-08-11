@@ -324,7 +324,7 @@ describe('Detect incorrect sizes attributes from HTML', () => {
         assert.strictEqual(res.stats.srcsetAttribute, 'image1.jpg 1w, image2.jpg 2w');
         assert.strictEqual(res.stats.sizesAttribute, '100vw (default)');
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.sizesAttribute, '100vw (default)');
-        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 300);
+        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 300);
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
     });
     it('calculates the right size', async () => {
@@ -337,7 +337,7 @@ describe('Detect incorrect sizes attributes from HTML', () => {
         }, {}, {});
         assert.strictEqual(res.stats.srcsetAttribute, 'image1.jpg 1w, image2.jpg 2w');
         assert.strictEqual(res.stats.sizesAttribute, '2vw');
-        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 6);
+        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 6);
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
     });
     it('calculates the right size and add an offender', async () => {
@@ -350,7 +350,7 @@ describe('Detect incorrect sizes attributes from HTML', () => {
         }, {}, {});
         assert.strictEqual(res.stats.srcsetAttribute, 'image1.jpg 1w, image2.jpg 2w');
         assert.strictEqual(res.stats.sizesAttribute, '(max-width: 400px) 100vw, 50vw');
-        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 300);
+        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 300);
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
     });
     it('also add an offender if the displayWidth is higher than calculated sizes', async () => {
@@ -363,7 +363,7 @@ describe('Detect incorrect sizes attributes from HTML', () => {
         }, {}, {});
         assert.strictEqual(res.stats.srcsetAttribute, 'image1.jpg 1w, image2.jpg 2w');
         assert.strictEqual(res.stats.sizesAttribute, '(max-width: 200px) 100vw, 50vw');
-        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 150);
+        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 150);
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
     });
     it('also works on a picture element with sizes on the img tag', async () => {
@@ -376,7 +376,7 @@ describe('Detect incorrect sizes attributes from HTML', () => {
         }, {}, {});
         assert.strictEqual(res.stats.srcsetAttribute, 'image3.jpg 3w');
         assert.strictEqual(res.stats.sizesAttribute, '2vw');
-        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 6);
+        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 6);
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
     });
     it('also works on a picture element', async () => {
@@ -389,7 +389,7 @@ describe('Detect incorrect sizes attributes from HTML', () => {
         }, {}, {});
         assert.strictEqual(res.stats.srcsetAttribute, 'image3.jpg 3w');
         assert.strictEqual(res.stats.sizesAttribute, '3vw');
-        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 9);
+        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 9);
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
     });
     it('also works on a picture element with sizes', async () => {
@@ -402,7 +402,7 @@ describe('Detect incorrect sizes attributes from HTML', () => {
         }, {}, {});
         assert.strictEqual(res.stats.srcsetAttribute, 'image1.jpg 1w, image2.jpg 2w');
         assert.strictEqual(res.stats.sizesAttribute, '2vw');
-        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 6);
+        assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 6);
         assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
     });
 });

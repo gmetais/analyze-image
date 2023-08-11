@@ -28,14 +28,36 @@ describe('Image size detection', () => {
     });
 });
 
-describe('DisplayRatio detection', () => {
-
+describe('Display Ratio detection', () => {
     it('should calculate the displayRatio properly on a 1x DPR', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
         const res = await ModulesRunner.execModuleForTest('dimensions', image, {
             displayWidth: 28,
             displayHeight: 43
         }, {}, {stats: {format: 'jpg'}});
-        assert.strictEqual(res.stats.displayRatio, 285 * 427 / 28 / 43);
+        assert.strictEqual(res.stats.displayRatio.toFixed(5), '10.05440');
+    });
+    it('should calculate the displayRatio properly on a 3x DPR', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
+        const res = await ModulesRunner.execModuleForTest('dimensions', image, {
+            displayWidth: 28,
+            displayHeight: 43,
+            dpr: 3
+        }, {}, {stats: {format: 'jpg'}});
+        assert.strictEqual(res.stats.displayRatio.toFixed(5), '3.35147');
+    });
+});
+
+describe('Display Density detection', () => {
+    it('should calculate the displayDensity properly', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
+        const res = await ModulesRunner.execModuleForTest('dimensions', image, {
+            displayWidth: 28,
+            displayHeight: 43,
+            dpr: 3
+        }, {}, {stats: {format: 'jpg'}});
+        assert.strictEqual(res.stats.displayDensity.toFixed(5), '10.05440');
+        assert.strictEqual(res.offenders.imageExcessiveDensity.displayDensity.toFixed(5), '10.05440');
+        assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedMaxDensity, 2);
     });
 });

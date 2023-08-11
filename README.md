@@ -95,7 +95,8 @@ Result is an object with the following properties:
 | stats.weight | `number` | Number of bytes of the provided image |
 | stats.width | `number` | Provided image's width in pixel |
 | stats.height | `number` | Provided image's height in pixel |
-| stats.displayRatio | `number` | Number of pixels the image was displayed on divided by the real number of pixels in the image object, >1 if provided image is too large, <1 if provided image is too small.
+| stats.displayRatio | `number` | Provided image's dimensions divided by the dimensions of the physical pixels the image is displayed on. The image is too large if > 1, too small if < 1 |
+| stats.displayDensity | `number` | Provided image's dimensions divided by the dimensions of the CSS pixels the image is displayed on. Basically, displayDensity = displayRatio x dpr |
 | **transforms** | `object` | **Contains the various transformations tested on the image** |
 | transforms.optimized | `object` | Property only available if the image was successfuly optimized |
 | transforms.optimized.weight | `number` | Weight in bytes after optimization |
@@ -130,9 +131,10 @@ Result is an object with the following properties:
 | offenders.imageOldFormat.webpWeight | `number` | Weight in bytes in WebP |
 | offenders.imageOldFormat.avifWeight | `number` | Weight in bytes in AVIF |
 | offenders.imageWithIncorrectSizesParam | `object` | Appears only if the sizes parameter on a responsive image is more than 10% smaller or larger compared to the onscreen dimensions (only for images with a "w" srcset) |
-| offenders.imageOldFormat.sizesAttribute | `string` | The sizes attribute extracted from the HTML |
-| offenders.imageOldFormat.foundValueInPx | `number` | The number of pixels calculated from the sizes attribute |
-| offenders.imageOldFormat.displayWidth | `number` | The number of pixels the image is displayed on (same as browserdata.displayWidth) |
+| offenders.imageWithIncorrectSizesParam.sizesAttribute | `string` | The sizes attribute extracted from the HTML |
+| offenders.imageWithIncorrectSizesParam.convertedInPx | `number` | The number of pixels calculated from the sizes attribute |
+| offenders.imageWithIncorrectSizesParam.displayWidth | `number` | The number of pixels the image is displayed on (same as browserdata.displayWidth) |
+| offenders.
 | generator | `string` | Name and version of the current tool (i.e. `analyze-image vX.X.X`) |
 
 
