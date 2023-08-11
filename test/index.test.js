@@ -94,30 +94,64 @@ describe('Image parameter', () => {
 
     describe('Output format', () => {
         it('should be respected', async () => {
-            const image = await fs.readFile(path.resolve(__dirname, './images/png-image.png'));
+            const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
             const res = await analyzeImage(image, {
                 displayWidth: 200,
-                displayHeight: 100
+                displayHeight: 100,
+                viewportWidth: 1200,
+                viewportHeight: 800,
+                html: '<picture><source media="(max-width: 600px)" srcset="image3.jpg 30w" sizes="100vw" /><img srcset="image1.jpg 10w,image2.jpg 20w" sizes="5vw" /></picture>'
             });
             
-            assert.strictEqual(res.stats.format, 'png');
-            assert.strictEqual(res.stats.mimeType, 'image/png');
+            // Stats
+            assert.strictEqual(res.stats.format, 'jpg');
+            assert.strictEqual(res.stats.mimeType, 'image/jpeg');
             assert.strictEqual(res.stats.weight, image.length);
-            assert.strictEqual(res.stats.width, 664);
-            assert.strictEqual(res.stats.height, 314);
+            assert.strictEqual(res.stats.width, 285);
+            assert.strictEqual(res.stats.height, 427);
             assert.strictEqual(res.stats.animated, false);
-            assert.ok(res.transforms.optimize.weight < image.length);
-            assert.ok(res.transforms.optimize.gainFromOriginal > 0);
-            assert.strictEqual(res.transforms.optimize.gainFromOriginal, image.length - res.transforms.optimize.weight);
-            assert.strictEqual(Buffer.isBuffer(res.transforms.optimize.body), true);
-            assert.strictEqual(res.transforms.optimize.body.length, res.transforms.optimize.weight);
-            assert.ok(res.transforms.resize.weight < image.length);
-            assert.strictEqual(res.transforms.resize.width, 200);
-            assert.strictEqual(res.transforms.resize.height, 100);
-            assert.ok(res.transforms.resize.gainFromOriginal > 0);
-            assert.strictEqual(res.transforms.resize.gainFromOriginal, image.length - res.transforms.resize.weight);
-            assert.strictEqual(Buffer.isBuffer(res.transforms.resize.body), true);
-            assert.strictEqual(res.transforms.resize.body.length, res.transforms.resize.weight);
+            assert.strictEqual(res.stats.sizesAttribute, '5vw');
+            assert.strictEqual(res.stats.srcsetAttribute, 'image1.jpg 10w, image2.jpg 20w');
+
+            // Transforms
+            assert.ok(res.transforms.optimized.weight < image.length);
+            assert.ok(res.transforms.optimized.gain > 0);
+            assert.strictEqual(res.transforms.optimized.gain, image.length - res.transforms.optimized.weight);
+            assert.strictEqual(Buffer.isBuffer(res.transforms.optimized.body), true);
+            assert.strictEqual(res.transforms.optimized.body.length, res.transforms.optimized.weight);
+            
+            assert.ok(res.transforms.resized.weight < image.length);
+            assert.strictEqual(res.transforms.resized.width, 200);
+            assert.strictEqual(res.transforms.resized.height, 100);
+            assert.ok(res.transforms.resized.gain > 0);
+            assert.strictEqual(res.transforms.resized.gain, res.transforms.optimized.weight - res.transforms.resized.weight);
+            assert.strictEqual(Buffer.isBuffer(res.transforms.resized.body), true);
+            assert.strictEqual(res.transforms.resized.body.length, res.transforms.resized.weight);
+
+            assert.ok(res.transforms.webpEncoded.weight < image.length);
+            assert.ok(res.transforms.webpEncoded.gain > 0);
+            assert.strictEqual(res.transforms.webpEncoded.gain, image.length - res.transforms.webpEncoded.weight);
+
+            assert.ok(res.transforms.avifEncoded.weight < image.length);
+            assert.ok(res.transforms.avifEncoded.gain > 0);
+            assert.strictEqual(res.transforms.avifEncoded.gain, image.length - res.transforms.avifEncoded.weight);
+
+            // Offenders
+            assert.strictEqual(res.offenders.imageNotOptimized.beforeWeight, res.stats.weight);
+            assert.ok(res.offenders.imageNotOptimized.afterWeight > 0);
+
+            assert.strictEqual(res.offenders.imageScaledDown.beforeWeight, res.transforms.optimized.weight);
+            assert.ok(res.offenders.imageScaledDown.afterWeight > 0);
+            assert.strictEqual(res.offenders.imageScaledDown.width, 200);
+            assert.strictEqual(res.offenders.imageScaledDown.height, 100);
+
+            assert.strictEqual(res.offenders.imageOldFormat.beforeWeight, res.stats.weight);
+            assert.ok(res.offenders.imageOldFormat.afterWeight > 0);
+            assert.ok(res.offenders.imageOldFormat.webpWeight > 0);
+            assert.ok(res.offenders.imageOldFormat.avifWeight > 0);
+
+            assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.foundValueInPx, 60);
+            assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
         });
     });
 });

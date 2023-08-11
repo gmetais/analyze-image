@@ -17,7 +17,7 @@ describe('Resize module', () => {
             format: 'jpg',
             weight: image.length
         }});
-        assert.ok(!result.transforms.resize, 'Should not resize image');
+        assert.ok(!result.transforms.resized, 'Should not resize image');
 
         result = await ModulesRunner.execModuleForTest('resize', image, {
             displayWidth: 100,
@@ -26,7 +26,7 @@ describe('Resize module', () => {
             format: 'jpg',
             weight: image.length
         }});
-        assert.ok(!result.transforms.resize, 'Should not resize image');
+        assert.ok(!result.transforms.resized, 'Should not resize image');
 
         result = await ModulesRunner.execModuleForTest('resize', image, {
             displayWidth: 0,
@@ -35,7 +35,7 @@ describe('Resize module', () => {
             format: 'jpg',
             weight: image.length
         }});
-        assert.ok(!result.transforms.resize, 'Should not resize image');
+        assert.ok(!result.transforms.resized, 'Should not resize image');
 
         result = await ModulesRunner.execModuleForTest('resize', image, {
             displayWidth: null,
@@ -44,7 +44,7 @@ describe('Resize module', () => {
             format: 'jpg',
             weight: image.length
         }});
-        assert.ok(!result.transforms.resize, 'Should not resize image');
+        assert.ok(!result.transforms.resized, 'Should not resize image');
     });
 
 
@@ -70,12 +70,16 @@ describe('Resize module', () => {
                 height: file.height
             }});
 
-            assert.ok(resizeResult.transforms.resize.weight < image.length, 'New file is smaller than original file');
-            assert.ok(resizeResult.transforms.resize.gainFromOriginal > 0, 'Gain is provided');
-            assert.strictEqual(resizeResult.transforms.resize.body.length, resizeResult.transforms.resize.weight, 'New buffer saved');
+            assert.ok(resizeResult.transforms.resized.weight < image.length, 'New file is smaller than original file');
+            assert.ok(resizeResult.transforms.resized.gain > 0, 'Gain is provided');
+            assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.weight, 'New buffer saved');
 
-            const newContentType = await ModulesRunner.execModuleForTest('contentType', resizeResult.transforms.resize.body);
+            const newContentType = await ModulesRunner.execModuleForTest('contentType', resizeResult.transforms.resized.body);
             assert.strictEqual(newContentType.stats.format, file.format, 'Content type is still the same');
+
+            assert.ok(resizeResult.offenders.imageScaledDown.beforeWeight > 0);
+            assert.strictEqual(resizeResult.offenders.imageScaledDown.width, Math.round(file.width / 10));
+            assert.strictEqual(resizeResult.offenders.imageScaledDown.height, Math.round(file.height / 10));
         });
     });
 
@@ -90,6 +94,33 @@ describe('Resize module', () => {
             weight: image.length
         }});
 
-        assert.ok(!result.transforms.resize, 'Should not resize image');
+        assert.ok(!result.transforms.resized, 'Should not resize image');
+
+        assert.strictEqual(result.offenders.imageScaledDown, undefined);
+    });
+
+    it('should multiply display size with DPR', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
+        const resizeResult = await ModulesRunner.execModuleForTest('resize', image, {
+            displayWidth: 28,
+            displayHeight: 43,
+            dpr: 2
+        }, {}, {stats: {
+            format: 'jpg',
+            weight: image.length,
+            width: 285,
+            height: 427
+        }});
+
+        assert.ok(resizeResult.transforms.resized.weight < image.length, 'New file is smaller than original file');
+        assert.ok(resizeResult.transforms.resized.gain > 0, 'Gain is provided');
+        assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.weight, 'New buffer saved');
+
+        const newContentType = await ModulesRunner.execModuleForTest('contentType', resizeResult.transforms.resized.body);
+        assert.strictEqual(newContentType.stats.format, 'jpg', 'Content type is still the same');
+
+        assert.ok(resizeResult.offenders.imageScaledDown.beforeWeight > 0);
+        assert.strictEqual(resizeResult.offenders.imageScaledDown.width, 28 * 2);
+        assert.strictEqual(resizeResult.offenders.imageScaledDown.height, 43 * 2);
     });
 });

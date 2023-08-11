@@ -40,16 +40,19 @@ describe('Optimize module', () => {
             height: 427,
             weight: image.length
         }});
-        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        assert.ok(result.transforms.optimized.weight < image.length, 'New file is smaller than original file');
+        assert.strictEqual(result.offenders.imageNotOptimized.beforeWeight, image.length);
+        assert.strictEqual(result.offenders.imageNotOptimized.afterWeight, result.transforms.optimized.weight);
     });
 
-    it('should fail optimizing a jpg if the quality option is too heigh', async () => {
+    it('should not add an offender if gain is not good enough', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
         const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {jpgQuality: 100}, {stats: {
             format: 'jpg',
             weight: image.length
         }});
-        assert.strictEqual(result.transforms.optimize, undefined, 'Optimization failed');
+        assert.ok(result.transforms.optimized);
+        assert.strictEqual(result.offenders.imageNotOptimized, undefined);
     });
 
     it('should succeed optimizing a png', async () => {
@@ -58,7 +61,9 @@ describe('Optimize module', () => {
             format: 'png',
             weight: image.length
         }});
-        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        assert.ok(result.transforms.optimized.weight < image.length, 'New file is smaller than original file');
+        assert.strictEqual(result.offenders.imageNotOptimized.beforeWeight, image.length);
+        assert.strictEqual(result.offenders.imageNotOptimized.afterWeight, result.transforms.optimized.weight);
     });
 
     it('should succeed optimizing a webp', async () => {
@@ -67,7 +72,9 @@ describe('Optimize module', () => {
             format: 'webp',
             weight: image.length
         }});
-        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        assert.ok(result.transforms.optimized.weight < image.length, 'New file is smaller than original file');
+        assert.strictEqual(result.offenders.imageNotOptimized.beforeWeight, image.length);
+        assert.strictEqual(result.offenders.imageNotOptimized.afterWeight, result.transforms.optimized.weight);
     });
 
     it('should succeed optimizing an animated webp', async () => {
@@ -76,9 +83,11 @@ describe('Optimize module', () => {
             format: 'webp',
             weight: image.length
         }});
-        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        assert.ok(result.transforms.optimized.weight < image.length, 'New file is smaller than original file');
         const sharpMetadata = await sharp(image).metadata();
         assert.strictEqual(sharpMetadata.pages, 12, 'The image is still animated');
+        assert.strictEqual(result.offenders.imageNotOptimized.beforeWeight, image.length);
+        assert.strictEqual(result.offenders.imageNotOptimized.afterWeight, result.transforms.optimized.weight);
     });
 
     // TODO find an unoptimized test GIF!
@@ -88,7 +97,7 @@ describe('Optimize module', () => {
             format: 'gif',
             weight: image.length
         }});
-        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        assert.ok(result.transforms.optimized.weight < image.length, 'New file is smaller than original file');
         const sharpMetadata = await sharp(image).metadata();
         assert.strictEqual(sharpMetadata.pages, 10, 'The image is still animated');
     });*/
@@ -99,6 +108,8 @@ describe('Optimize module', () => {
             format: 'svg',
             weight: image.length
         }});
-        assert.ok(result.transforms.optimize.weight < image.length, 'New file is smaller than original file');
+        assert.ok(result.transforms.optimized.weight < image.length, 'New file is smaller than original file');
+        assert.strictEqual(result.offenders.imageNotOptimized.beforeWeight, image.length);
+        assert.strictEqual(result.offenders.imageNotOptimized.afterWeight, result.transforms.optimized.weight);
     });
 });

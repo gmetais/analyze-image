@@ -25,13 +25,17 @@
   },
   "homepage": "https://github.com/gmetais/analyze-image#readme",
   "dependencies": {
+    "css-calc-transform": "1.0.0",
     "debug": "4.3.4",
     "file-type": "16.5.3",
+    "htmlparser2": "9.0.0",
     "imagemin": "7.0.1",
     "imagemin-gifsicle": "7.0.0",
     "imagemin-svgo": "9.0.0",
     "is-svg": "3.0.0",
-    "sharp": "0.32.4"
+    "media-query-fns": "1.4.0",
+    "sharp": "0.32.4",
+    "srcset": "4.0.0"
   },
   "devDependencies": {
     "jest": "29.6.2"
