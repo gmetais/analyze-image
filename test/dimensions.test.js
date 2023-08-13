@@ -12,7 +12,7 @@ describe('Image size detection', () => {
         {name: 'svg-image.svg', format: 'svg', width: undefined, height: undefined},
         {name: 'jpeg-image.jpg', format: 'jpg', width: 285, height: 427},
         {name: 'png-image.png', format: 'png', width: 664, height: 314},
-        {name: 'animated.gif', format: 'gif', width: 50, height: 50},
+        {name: 'animated.gif', format: 'gif', width: 200, height: 197},
         {name: 'webp-image.webp', format: 'webp', width: 628, height: 444},
         {name: 'animated.webp', format: 'webp', width: 400, height: 400},
         {name: 'avif-image.avif', format: 'avif', width: 200, height: 200}

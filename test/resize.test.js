@@ -15,7 +15,7 @@ describe('Resize module', () => {
 
         result = await ModulesRunner.execModuleForTest('resize', image, {}, {}, {stats: {
             format: 'jpg',
-            weight: image.length
+            fileSize: image.length
         }});
         assert.ok(!result.transforms.resized, 'Should not resize image');
 
@@ -24,7 +24,7 @@ describe('Resize module', () => {
             displayHeight: undefined
         }, {}, {stats: {
             format: 'jpg',
-            weight: image.length
+            fileSize: image.length
         }});
         assert.ok(!result.transforms.resized, 'Should not resize image');
 
@@ -33,7 +33,7 @@ describe('Resize module', () => {
             displayHeight: 600
         }, {}, {stats: {
             format: 'jpg',
-            weight: image.length
+            fileSize: image.length
         }});
         assert.ok(!result.transforms.resized, 'Should not resize image');
 
@@ -42,7 +42,7 @@ describe('Resize module', () => {
             displayHeight: 100
         }, {}, {stats: {
             format: 'jpg',
-            weight: image.length
+            fileSize: image.length
         }});
         assert.ok(!result.transforms.resized, 'Should not resize image');
     });
@@ -63,23 +63,34 @@ describe('Resize module', () => {
             const resizeResult = await ModulesRunner.execModuleForTest('resize', image, {
                 displayWidth: file.width / 10,
                 displayHeight: file.height / 10
-            }, {}, {stats: {
+            }, {
+                removeBuffersFromTransforms: false
+            }, {stats: {
                 format: file.format,
-                weight: image.length,
+                fileSize: image.length,
                 width: file.width,
                 height: file.height
             }});
 
-            assert.ok(resizeResult.transforms.resized.weight < image.length, 'New file is smaller than original file');
-            assert.ok(resizeResult.transforms.resized.gain > 0, 'Gain is provided');
-            assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.weight, 'New buffer saved');
+            assert.strictEqual(resizeResult.transforms.resized.naturalWidth, file.width);
+            assert.strictEqual(resizeResult.transforms.resized.naturalHeight, file.height);
+            assert.ok(resizeResult.transforms.resized.fileSize > 0);
+            assert.strictEqual(resizeResult.transforms.resized.newWidth, Math.round(file.width / 10));
+            assert.strictEqual(resizeResult.transforms.resized.newHeight, Math.round(file.height / 10));
+            assert.strictEqual(resizeResult.transforms.resized.dpr, 1);
+            assert.ok(resizeResult.transforms.resized.newFileSize < image.length);
+            assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.newFileSize);
 
             const newContentType = await ModulesRunner.execModuleForTest('contentType', resizeResult.transforms.resized.body);
-            assert.strictEqual(newContentType.stats.format, file.format, 'Content type is still the same');
+            assert.strictEqual(newContentType.stats.format, file.format);
 
-            assert.ok(resizeResult.offenders.imageScaledDown.beforeWeight > 0);
-            assert.strictEqual(resizeResult.offenders.imageScaledDown.width, Math.round(file.width / 10));
-            assert.strictEqual(resizeResult.offenders.imageScaledDown.height, Math.round(file.height / 10));
+            assert.strictEqual(resizeResult.offenders.imageScaledDown.naturalWidth, file.width);
+            assert.strictEqual(resizeResult.offenders.imageScaledDown.naturalHeight, file.height);
+            assert.ok(resizeResult.offenders.imageScaledDown.fileSize > 0);
+            assert.strictEqual(resizeResult.offenders.imageScaledDown.newWidth, Math.round(file.width / 10));
+            assert.strictEqual(resizeResult.offenders.imageScaledDown.newHeight, Math.round(file.height / 10));
+            assert.strictEqual(resizeResult.offenders.imageScaledDown.dpr, 1);
+            assert.ok(resizeResult.offenders.imageScaledDown.newFileSize < image.length);
         });
     });
 
@@ -91,7 +102,7 @@ describe('Resize module', () => {
             displayHeight: 200
         }, {}, {stats: {
             format: 'svg',
-            weight: image.length
+            fileSize: image.length
         }});
 
         assert.ok(!result.transforms.resized, 'Should not resize image');
@@ -105,22 +116,25 @@ describe('Resize module', () => {
             displayWidth: 28,
             displayHeight: 43,
             dpr: 2
-        }, {}, {stats: {
+        }, {
+            removeBuffersFromTransforms: false
+        }, {stats: {
             format: 'jpg',
-            weight: image.length,
+            fileSize: image.length,
             width: 285,
             height: 427
         }});
 
-        assert.ok(resizeResult.transforms.resized.weight < image.length, 'New file is smaller than original file');
-        assert.ok(resizeResult.transforms.resized.gain > 0, 'Gain is provided');
-        assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.weight, 'New buffer saved');
+        assert.ok(resizeResult.transforms.resized.newFileSize < image.length);
+        assert.ok(resizeResult.transforms.resized.newFileSize < resizeResult.transforms.resized.fileSize);
+        assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.newFileSize, 'New buffer saved');
 
         const newContentType = await ModulesRunner.execModuleForTest('contentType', resizeResult.transforms.resized.body);
         assert.strictEqual(newContentType.stats.format, 'jpg', 'Content type is still the same');
 
-        assert.ok(resizeResult.offenders.imageScaledDown.beforeWeight > 0);
-        assert.strictEqual(resizeResult.offenders.imageScaledDown.width, 28 * 2);
-        assert.strictEqual(resizeResult.offenders.imageScaledDown.height, 43 * 2);
+        assert.ok(resizeResult.offenders.imageScaledDown.newFileSize > 0);
+        assert.ok(resizeResult.offenders.imageScaledDown.newFileSize < resizeResult.offenders.imageScaledDown.fileSize);
+        assert.strictEqual(resizeResult.offenders.imageScaledDown.newWidth, 28 * 2);
+        assert.strictEqual(resizeResult.offenders.imageScaledDown.newHeight, 43 * 2);
     });
 });

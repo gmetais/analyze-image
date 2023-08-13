@@ -12,7 +12,7 @@ describe('Reformat module', () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/svg-image.svg'));
         const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
             format: 'svg',
-            weight: image.length
+            fileSize: image.length
         }});
         assert.ok(!result.transforms.reformat, 'Should not reformat image');
     });
@@ -20,7 +20,7 @@ describe('Reformat module', () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/avif-image.avif'));
         const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
             format: 'avif',
-            weight: image.length
+            fileSize: image.length
         }});
         assert.ok(!result.transforms.reformat, 'Should not reformat image');
     });
@@ -28,7 +28,7 @@ describe('Reformat module', () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/animated.webp'));
         const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
             format: 'webp',
-            weight: image.length,
+            fileSize: image.length,
             animated: true
         }});
         assert.ok(!result.transforms.reformat, 'Should not reformat image');
@@ -44,22 +44,24 @@ describe('Reformat module', () => {
     files.forEach(file => {
         it('should succesfully reformat a ' + file.format + ' to webp', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
+            const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {removeBuffersFromTransforms: false}, {stats: {
                 format: file.format,
-                weight: image.length,
+                fileSize: image.length,
                 animated: file.animated
             }});
 
-            assert.ok(result.transforms.webpEncoded, 'Reformatting object exists');
-            assert.ok(result.transforms.webpEncoded.weight > 0, 'New file weight is provided');
-            assert.strictEqual(result.transforms.webpEncoded.body.length, result.transforms.webpEncoded.weight, 'New buffer saved');
-            assert.ok(result.transforms.webpEncoded.gain > 0, 'Gain is provided');
+            assert.ok(result.transforms.webpEncoded.currentFormat, files.format);
+            assert.ok(result.transforms.webpEncoded.newFileSize > 0, 'New file weight is provided');
+            assert.strictEqual(result.transforms.webpEncoded.body.length, result.transforms.webpEncoded.newFileSize);
+            assert.ok(result.transforms.webpEncoded.fileSize > 0);
 
             const newContentType = await ModulesRunner.execModuleForTest('contentType', result.transforms.webpEncoded.body);
             assert.strictEqual(newContentType.stats.format, 'webp', 'Content type is webp');
 
-            assert.strictEqual(result.offenders.imageOldFormat.beforeWeight, image.length);
-            assert.ok(result.offenders.imageOldFormat.afterWeight > 0);
+            assert.ok(result.offenders.imageOldFormat.currentFormat, files.format);
+            assert.strictEqual(result.offenders.imageOldFormat.fileSize, image.length);
+            assert.ok(result.offenders.imageOldFormat.newFileSize > 0);
+            assert.ok(result.offenders.imageOldFormat.newFileSize < result.offenders.imageOldFormat.fileSize);
         });
     });
 
@@ -72,22 +74,24 @@ describe('Reformat module', () => {
     files.forEach(file => {
         it('should succesfully reformat a ' + file.format + ' to avif', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
+            const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {removeBuffersFromTransforms: false}, {stats: {
                 format: file.format,
-                weight: image.length,
+                fileSize: image.length,
                 animated: file.animated
             }});
 
-            assert.ok(result.transforms.avifEncoded, 'Reformatting object exists');
-            assert.ok(result.transforms.avifEncoded.weight > 0, 'New file weight is provided');
-            assert.strictEqual(result.transforms.avifEncoded.body.length, result.transforms.avifEncoded.weight, 'New buffer saved');
-            assert.ok(result.transforms.avifEncoded.gain > 0, 'Gain is provided');
+            assert.ok(result.transforms.avifEncoded.currentFormat, files.format);
+            assert.ok(result.transforms.avifEncoded.newFileSize > 0, 'New file weight is provided');
+            assert.strictEqual(result.transforms.avifEncoded.body.length, result.transforms.avifEncoded.newFileSize);
+            assert.ok(result.transforms.avifEncoded.fileSize > 0);
 
             const newContentType = await ModulesRunner.execModuleForTest('contentType', result.transforms.avifEncoded.body);
             assert.strictEqual(newContentType.stats.format, 'avif', 'Content type is webp');
 
-            assert.strictEqual(result.offenders.imageOldFormat.beforeWeight, image.length);
-            assert.ok(result.offenders.imageOldFormat.afterWeight > 0);
+            assert.ok(result.offenders.imageOldFormat.currentFormat, files.format);
+            assert.strictEqual(result.offenders.imageOldFormat.fileSize, image.length);
+            assert.ok(result.offenders.imageOldFormat.newFileSize > 0);
+            assert.ok(result.offenders.imageOldFormat.newFileSize < result.offenders.imageOldFormat.fileSize);
         });
     });
 });

@@ -101,12 +101,12 @@ describe('Image parameter', () => {
                 viewportWidth: 1200,
                 viewportHeight: 800,
                 html: '<picture><source media="(max-width: 600px)" srcset="image3.jpg 30w" sizes="100vw" /><img srcset="image1.jpg 10w,image2.jpg 20w" sizes="5vw" /></picture>'
-            });
-            console.log(res.stats);
+            }, {removeBuffersFromTransforms: false});
+            
             // Stats
             assert.strictEqual(res.stats.format, 'jpg');
             assert.strictEqual(res.stats.mimeType, 'image/jpeg');
-            assert.strictEqual(res.stats.weight, image.length);
+            assert.strictEqual(res.stats.fileSize, image.length);
             assert.strictEqual(res.stats.width, 285);
             assert.strictEqual(res.stats.height, 427);
             assert.strictEqual(res.stats.animated, false);
@@ -116,47 +116,51 @@ describe('Image parameter', () => {
             assert.strictEqual(res.stats.displayRatio.toFixed(4), '2.8475');
 
             // Transforms
-            assert.ok(res.transforms.optimized.weight < image.length);
-            assert.ok(res.transforms.optimized.gain > 0);
-            assert.strictEqual(res.transforms.optimized.gain, image.length - res.transforms.optimized.weight);
+            assert.strictEqual(res.transforms.optimized.fileSize, image.length);
+            assert.ok(res.transforms.optimized.newFileSize < image.length);
             assert.strictEqual(Buffer.isBuffer(res.transforms.optimized.body), true);
-            assert.strictEqual(res.transforms.optimized.body.length, res.transforms.optimized.weight);
-            
-            assert.ok(res.transforms.resized.weight < image.length);
-            assert.strictEqual(res.transforms.resized.width, 200);
-            assert.strictEqual(res.transforms.resized.height, 100);
-            assert.ok(res.transforms.resized.gain > 0);
-            assert.strictEqual(res.transforms.resized.gain, res.transforms.optimized.weight - res.transforms.resized.weight);
+            assert.strictEqual(res.transforms.optimized.body.length, res.transforms.optimized.newFileSize);
+
+            assert.strictEqual(res.transforms.resized.fileSize, res.transforms.optimized.newFileSize);
+            assert.ok(res.transforms.resized.newFileSize < res.transforms.optimized.newFileSize);
+            assert.strictEqual(res.transforms.resized.naturalWidth, 285);
+            assert.strictEqual(res.transforms.resized.naturalHeight, 427);
+            assert.strictEqual(res.transforms.resized.newWidth, 200);
+            assert.strictEqual(res.transforms.resized.newHeight, 100);
             assert.strictEqual(Buffer.isBuffer(res.transforms.resized.body), true);
-            assert.strictEqual(res.transforms.resized.body.length, res.transforms.resized.weight);
+            assert.strictEqual(res.transforms.resized.body.length, res.transforms.resized.newFileSize);
 
-            assert.ok(res.transforms.webpEncoded.weight < image.length);
-            assert.ok(res.transforms.webpEncoded.gain > 0);
-            assert.strictEqual(res.transforms.webpEncoded.gain, image.length - res.transforms.webpEncoded.weight);
+            assert.strictEqual(res.transforms.webpEncoded.fileSize, image.length);
+            assert.ok(res.transforms.webpEncoded.newFileSize < image.length);
+            assert.strictEqual(Buffer.isBuffer(res.transforms.webpEncoded.body), true);
+            assert.strictEqual(res.transforms.webpEncoded.body.length, res.transforms.webpEncoded.newFileSize);
 
-            assert.ok(res.transforms.avifEncoded.weight < image.length);
-            assert.ok(res.transforms.avifEncoded.gain > 0);
-            assert.strictEqual(res.transforms.avifEncoded.gain, image.length - res.transforms.avifEncoded.weight);
+            assert.strictEqual(res.transforms.avifEncoded.fileSize, image.length);
+            assert.ok(res.transforms.avifEncoded.newFileSize < image.length);
+            assert.strictEqual(Buffer.isBuffer(res.transforms.avifEncoded.body), true);
+            assert.strictEqual(res.transforms.avifEncoded.body.length, res.transforms.avifEncoded.newFileSize);
 
             // Offenders
-            assert.strictEqual(res.offenders.imageNotOptimized.beforeWeight, res.stats.weight);
-            assert.ok(res.offenders.imageNotOptimized.afterWeight > 0);
+            assert.strictEqual(res.offenders.imageNotOptimized.fileSize, image.length);
+            assert.ok(res.offenders.imageNotOptimized.newFileSize < image.length);
 
-            assert.strictEqual(res.offenders.imageScaledDown.beforeWeight, res.transforms.optimized.weight);
-            assert.ok(res.offenders.imageScaledDown.afterWeight > 0);
-            assert.strictEqual(res.offenders.imageScaledDown.width, 200);
-            assert.strictEqual(res.offenders.imageScaledDown.height, 100);
+            assert.strictEqual(res.offenders.imageScaledDown.fileSize, res.transforms.optimized.newFileSize);
+            assert.ok(res.offenders.imageScaledDown.newFileSize < res.transforms.optimized.newFileSize);
+            assert.strictEqual(res.offenders.imageScaledDown.naturalWidth, 285);
+            assert.strictEqual(res.offenders.imageScaledDown.naturalHeight, 427);
+            assert.strictEqual(res.offenders.imageScaledDown.newWidth, 200);
+            assert.strictEqual(res.offenders.imageScaledDown.newHeight, 100);
 
-            assert.strictEqual(res.offenders.imageOldFormat.beforeWeight, res.stats.weight);
-            assert.ok(res.offenders.imageOldFormat.afterWeight > 0);
-            assert.ok(res.offenders.imageOldFormat.webpWeight > 0);
-            assert.ok(res.offenders.imageOldFormat.avifWeight > 0);
+            assert.strictEqual(res.offenders.imageOldFormat.fileSize, image.length);
+            assert.ok(res.offenders.imageOldFormat.newFileSize > 0);
+            assert.ok(res.offenders.imageOldFormat.webpSize > 0);
+            assert.ok(res.offenders.imageOldFormat.avifSize > 0);
 
+            assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.sizesAttribute, '5vw');
             assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.convertedInPx, 60);
             assert.strictEqual(res.offenders.imageWithIncorrectSizesParam.displayWidth, 200);
 
-            assert.strictEqual(res.offenders.imageExcessiveDensity.displayDensity.toFixed(4), '2.8475');
-            assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedMaxDensity, 2);
+            assert.ok(!res.offenders.imageExcessiveDensity);
         });
     });
 });

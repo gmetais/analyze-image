@@ -8,9 +8,11 @@ Deeply inspired by https://github.com/macbre/analyze-css
 ```js
 const analyzeImage = require('analyze-image');
 const browserData = {
-    html: '<img src="image.jpg">'
+    html: '<img srcset="image1.jpg 400w, image2.jpg 800w" sizes="50vw">'
     displayWidth: 300,
-    displayHeight: 200
+    displayHeight: 200,
+    viewportWidth: 1200,
+    viewportHeight: 800
 };
 const options = {
     // ...
@@ -64,7 +66,7 @@ try {
 
 | Data name | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| html | `string` |  | html code for the <img> or <picture> element, can be retrived in JS with `imageElement.outerHTML` |
+| html | `string` |  | html code for the `img` or `picture` element, can be retrived in JS with `imageElement.outerHTML` |
 | displayWidth | `number` |  | number of "CSS pixels" the image is displayed on, can be retrieved in JS with `imageElement.width` |
 | displayHeight | `number` |  | number of "CSS pixels" the image is displayed on, can be retrieved in jS with `imageElement.width` |
 | viewportWidth | `number` |  | number of "CSS pixels" of the browser's window, can be retrieved in JS with `window.innerWidth` |
@@ -87,58 +89,95 @@ try {
 
 Result is an object with the following properties:
 
-| Property name | Type | Description |
-| ------------- | ---- | ----------- |
-| **stats** | `object` | **Contains various data extracted from the original image** |
-| stats.format | `string` | Name of the image format detected (`jpg`, `png`, `webp`, `avif`, `gif`, `svg`) |
-| stats.mymeType | `string` | Official mime type of the image format (i.e. `image/jpeg`) |
-| stats.weight | `number` | Number of bytes of the provided image |
-| stats.width | `number` | Provided image's width in pixel |
-| stats.height | `number` | Provided image's height in pixel |
-| stats.displayRatio | `number` | Provided image's dimensions divided by the dimensions of the physical pixels the image is displayed on. The image is too large if > 1, too small if < 1 |
-| stats.displayDensity | `number` | Provided image's dimensions divided by the dimensions of the CSS pixels the image is displayed on. Basically, displayDensity = displayRatio x dpr |
-| **transforms** | `object` | **Contains the various transformations tested on the image** |
-| transforms.optimized | `object` | Property only available if the image was successfuly optimized |
-| transforms.optimized.weight | `number` | Weight in bytes after optimization |
-| transforms.optimized.gain | `number` | Comparison between original weight and optimized weight |
-| transforms.optimized.body | `buffer` | Optimized file |
-| transforms.resized | `object` | Property only available if resizing the image provides good results (requires `displayWidth` and `displayHeight` inputs) |
-| transforms.resized.weight | `number` | Weight in bytes after resizing |
-| transforms.resized.gain | `number` | Comparison between optimized weight and resized weight (it doesn't make sens comparing an unoptimized image to a resized + optimized image) |
-| transforms.resized.width | `number` | New file size |
-| transforms.resized.height | `number` | New file size |
-| transforms.resized.body | `buffer` | Optimized file |
-| transforms.webpEncoded | `object` | Property only available if converting the image to WebP provides good results |
-| transforms.webpEncoded.weight | `number` | Weight in bytes when in WebP |
-| transforms.webpEncoded.gain | `number` | Comparison between original weight and optimized weight |
-| transforms.webpEncoded.body | `buffer` | Optimized file |
-| transforms.avifEncoded | `object` | Property only available if converting the image to AVIF provides good results |
-| transforms.avifEncoded.weight | `number` | Weight in bytes when in AVIF |
-| transforms.avifEncoded.gain | `number` | Comparison between original weight and optimized weight |
-| transforms.avifEncoded.body | `buffer` | Optimized file |
-| **offenders** | `object` | **Contains the various transformations tested on the image** |
-| offenders.imageNotOptimized | `object` | Appears only if the image could be significantly smaller with a better compression |
-| offenders.imageNotOptimized.beforeWeight | `number` | Weight in bytes of the original file |
-| offenders.imageNotOptimized.afterWeight | `number` | Weight in bytes after optimization |
-| offenders.imageScaledDown | `object` | Appears only if the image could be significantly smaller when resized to fit tis display dimensions |
-| offenders.imageScaledDown.beforeWeight | `number` | Weight in bytes of the optimized image, or the original file if if was already sufficiently optimized |
-| offenders.imageScaledDown.afterWeight | `number` | Weight in bytes after resizing |
-| offenders.imageScaledDown.width | `number` | New file size |
-| offenders.imageScaledDown.height | `number` | New file size |
-| offenders.imageOldFormat | `object` | Appears only if the image could be significantly smaller if re-encoded in a new format (WebP or AVIF) |
-| offenders.imageOldFormat.beforeWeight | `number` | Weight in bytes of the original file |
-| offenders.imageOldFormat.afterWeight | `number` | Weight in bytes of the best found format |
-| offenders.imageOldFormat.webpWeight | `number` | Weight in bytes in WebP |
-| offenders.imageOldFormat.avifWeight | `number` | Weight in bytes in AVIF |
-| offenders.imageWithIncorrectSizesParam | `object` | Appears only if the sizes parameter on a responsive image is more than 10% smaller or larger compared to the onscreen dimensions (only for images with a "w" srcset) |
-| offenders.imageWithIncorrectSizesParam.sizesAttribute | `string` | The sizes attribute extracted from the HTML |
-| offenders.imageWithIncorrectSizesParam.convertedInPx | `number` | The number of pixels calculated from the sizes attribute |
-| offenders.imageWithIncorrectSizesParam.displayWidth | `number` | The number of pixels the image is displayed on (same as browserdata.displayWidth) |
-| offenders.
-| generator | `string` | Name and version of the current tool (i.e. `analyze-image vX.X.X`) |
+```js
+{
+    // Contains various data extracted from the original image
+    stats: {
+        format: // [String] Name of the image format detected (`jpg`, `png`, `webp`, `avif`, `gif`, `svg`)
+        mymeType: // [string] Official mime type of the image format (i.e. `image/jpeg`)
+        fileSize: // [number] Number of bytes of the provided image
+        width: // [number] Provided image's width in pixel
+        height: // [number] Provided image's height in pixel
+        displayRatio: // [number] Provided image's dimensions divided by the dimensions of the physical pixels the image is displayed on. The image is too large if > 1, too small if < 1
+        displayDensity: // [number] Provided image's dimensions divided by the dimensions of the CSS pixels the image is displayed on. Basically, displayDensity = displayRatio x dpr
+    },
+    // Contains the various transformations tested on the image
+    transforms: {
+        // Property only available if the image was successfuly optimized
+        optimized: {
+            fileSize: // [number] Weight in bytes of the original file
+            newFileSize: // [number] Weight in bytes after optimization
+            body: // [buffer] Optimized file
+        },
+        // Property only available if resizing the image provides good results (requires `displayWidth` and `displayHeight` inputs)
+        resized: {
+            naturalWidth: // [number] Provided image's width in pixel
+            naturalHeight: // [number] Provided image's height in pixel
+            fileSize: // [number] Weight in bytes of the image before resizing. Using the optimized weight if available, because it makes no sense comparing rescaled+optimized vs unoptimized.
+            newWidth: // [number] New file's width in pixel
+            newHeight: // [number] New file's height in pixel
+            dpr: // [numer] Screen density used to determine new dimensions
+            newFileSize: // [number] Weight in bytes after resizing
+            body: // [buffer] Resized file
+        },
+        // Property only available if converting the image to WebP provides good results
+        webpEncoded: {
+            currentFormat: // [string] Type of the original file
+            fileSize: // [number] Weight in bytes of the original file
+            newFileSize: // [number] Weight in bytes after conversion
+            body: // [buffer] WebP file
+        },
+        // Property only available if converting the image to AVIF provides good results
+        avifEncoded: {
+            currentFormat: // [string] Type of the original file
+            fileSize: // [number] Weight in bytes of the original file
+            newFileSize: // [number] Weight in bytes after conversion
+            body: // [buffer] AVIF file
+        }
+    },
+    // Contains the various transformations tested on the image
+    offenders: {
+        // Appears only if the image could be significantly smaller with a better compression
+        imageNotOptimized: {
+            fileSize: // [number] Weight in bytes of the original file
+            newFileSize: // [number] Weight in bytes after optimization
+        },
+        // Appears only if the image could be significantly smaller when resized to fit tis display dimensions
+        imageScaledDown: {
+            naturalWidth: // [number] Provided image's width in pixel
+            naturalHeight: // [number] Provided image's height in pixel
+            fileSize: // [number] Weight in bytes of the image before resizing. Using the optimized weight if available, because it makes no sense comparing rescaled+optimized vs unoptimized.
+            newWidth: // [number] New file's width in pixel
+            newHeight: // [number] New file's height in pixel
+            dpr: // [numer] Screen density used to determine new dimensions
+            newFileSize: // [number] Weight in bytes after resizing
+        },
+        // Appears only if the image density is >2.2 on a high density screen (>2.2 dpr)
+        imageExcessiveDensity: {
+            displayDensity: // [number] The current density of the image on the screen
+            recommendedMaxDensity: // [number] The density above which the human eye hardly sees a difference
+        },
+        // Appears only if the image could be significantly smaller if re-encoded in a new format (WebP or AVIF)
+        imageOldFormat: {
+            currentFormat: // [string] Type of the original file
+            fileSize: // [number] Weight in bytes of the original file
+            newFileSize: // [number] Weight in bytes of the best found format
+            webpSize: // [number] Weight in bytes in WebP
+            avifSize: // [number] Weight in bytes in AVIF
+        },
+        // Appears only if the sizes parameter on a responsive image is more than 10% smaller or larger compared to the onscreen dimensions (only for images with a "w" srcset)
+        imageWithIncorrectSizesParam: {
+            sizesAttribute: // [string] The sizes attribute extracted from the HTML
+            convertedInPx: // [number] The number of pixels calculated from the sizes attribute
+            displayWidth: // [number] The number of pixels the image is displayed on (same as browserdata.displayWidth)
+        }
+    },
+    generator: // [string] Name and version of the current tool (i.e. `analyze-image vX.X.X`)
+}
+````
 
 
 ## Error codes
 
-252: the provided image is empty
-253: the provided image is not a valid image
+| 252 | the provided image is empty |
+| 253 | the provided image is not a valid image |
