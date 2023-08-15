@@ -57,7 +57,5 @@ describe('Display Density detection', () => {
             dpr: 3
         }, {}, {stats: {format: 'jpg'}});
         assert.strictEqual(res.stats.displayDensity.toFixed(5), '10.05440');
-        assert.strictEqual(res.offenders.imageExcessiveDensity.displayDensity.toFixed(5), '10.05440');
-        assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedMaxDensity, 2);
     });
 });

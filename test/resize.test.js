@@ -137,4 +137,28 @@ describe('Resize module', () => {
         assert.strictEqual(resizeResult.offenders.imageScaledDown.newWidth, 28 * 2);
         assert.strictEqual(resizeResult.offenders.imageScaledDown.newHeight, 43 * 2);
     });
+
+    it('should report excessive image density and resize further', async () => {
+        const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
+        const res = await ModulesRunner.execModuleForTest('resize', image, {
+            displayWidth: 28,
+            displayHeight: 43,
+            dpr: 3
+        }, {}, {
+            stats: {
+                format: 'jpg',
+                displayDensity: 10.05440,
+                width: 285,
+                height: 427,
+                fileSize: image.length
+            }
+        });
+        assert.strictEqual(res.offenders.imageExcessiveDensity.displayDensity.toFixed(5), '10.05440');
+        assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedMaxDensity, 2);
+        assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedWidth, 56);
+        assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedHeight, 86);
+        assert.ok(res.offenders.imageExcessiveDensity.fileSize < image.length);
+        assert.ok(res.offenders.imageExcessiveDensity.newFileSize < res.offenders.imageExcessiveDensity.fileSize);
+        assert.ok(res.offenders.imageExcessiveDensity.newFileSize > 0);
+    });
 });

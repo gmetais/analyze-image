@@ -68,7 +68,7 @@ try {
 | --------- | ---- | ------- | ----------- |
 | html | `string` |  | html code for the `img` or `picture` element, can be retrived in JS with `imageElement.outerHTML` |
 | displayWidth | `number` |  | number of "CSS pixels" the image is displayed on, can be retrieved in JS with `imageElement.width` |
-| displayHeight | `number` |  | number of "CSS pixels" the image is displayed on, can be retrieved in jS with `imageElement.width` |
+| displayHeight | `number` |  | number of "CSS pixels" the image is displayed on, can be retrieved in jS with `imageElement.height` |
 | viewportWidth | `number` |  | number of "CSS pixels" of the browser's window, can be retrieved in JS with `window.innerWidth` |
 | viewportHeight | `number` |  | number of "CSS pixels" of the browser's window, can be retrieved in JS with `window.innerHeight` |
 | dpr | `number` | `1` | the browser's device pixel ratio, can be retrieved in JS with `window.devicePixelRatio` |
@@ -156,6 +156,11 @@ Result is an object with the following properties:
         imageExcessiveDensity: {
             displayDensity: // [number] The current density of the image on the screen
             recommendedMaxDensity: // [number] The density above which the human eye hardly sees a difference
+            recommendedWidth: // [number] Corresponding dimensions in pixels
+            recommendedHeight: // [number] Corresponding dimensions in pixels
+            fileSize: // [number] Weight of the reference image (using imageScaledDown image if exists)
+            newFileSize: // [number] Weight in bytes after resizing
+
         },
         // Appears only if the image could be significantly smaller if re-encoded in a new format (WebP or AVIF)
         imageOldFormat: {
