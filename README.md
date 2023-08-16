@@ -154,11 +154,12 @@ Result is an object with the following properties:
         },
         // Appears only if the image density is >2.2 on a high density screen (>2.2 dpr)
         imageExcessiveDensity: {
-            displayDensity: // [number] The current density of the image on the screen
+            alreadyResized: // [boolean] If true, means that we are using the resized file as a reference, otherwise it is the optimized image or the original image
+            referenceDensity: // [number] The density we are comparing from
+            fileSize: // [number] Weight of the reference image
             recommendedMaxDensity: // [number] The density above which the human eye hardly sees a difference
             recommendedWidth: // [number] Corresponding dimensions in pixels
             recommendedHeight: // [number] Corresponding dimensions in pixels
-            fileSize: // [number] Weight of the reference image (using imageScaledDown image if exists)
             newFileSize: // [number] Weight in bytes after resizing
 
         },
