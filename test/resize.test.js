@@ -153,7 +153,7 @@ describe('Resize module', () => {
                 fileSize: image.length
             }
         });
-        assert.strictEqual(res.offenders.imageExcessiveDensity.displayDensity.toFixed(5), '10.05440');
+        assert.strictEqual(res.offenders.imageExcessiveDensity.referenceDensity, 3);
         assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedMaxDensity, 2);
         assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedWidth, 56);
         assert.strictEqual(res.offenders.imageExcessiveDensity.recommendedHeight, 86);
