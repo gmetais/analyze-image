@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Analyzes an image and detects potential improvements for a webpage",
   "main": "./lib/index.js",
+  "engines": {
+    "node": ">= 16.0"
+  },
   "scripts": {
     "test": "jest test/ --coverage --detectOpenHandles"
   },
