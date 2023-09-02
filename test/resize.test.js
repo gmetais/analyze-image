@@ -1,10 +1,13 @@
-const { describe, it } = require("@jest/globals");
+import { describe, it } from '@jest/globals';
 
-const ModulesRunner = require('../lib/modulesRunner'),
-    assert = require('assert'),
-    fs = require('fs').promises,
-    path = require('path')
-    sharp = require('sharp');
+import {execModuleForTest} from '../lib/modulesRunner.js';
+import assert from 'assert';
+import fs from 'node:fs/promises';
+import * as path from 'path';
+import sharp from 'sharp';
+import {fileURLToPath} from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 describe('Resize module', () => {
@@ -13,13 +16,13 @@ describe('Resize module', () => {
         
         let result;
 
-        result = await ModulesRunner.execModuleForTest('resize', image, {}, {}, {stats: {
+        result = await execModuleForTest('resize', image, {}, {}, {stats: {
             format: 'jpg',
             fileSize: image.length
         }});
         assert.ok(!result.transforms.resized, 'Should not resize image');
 
-        result = await ModulesRunner.execModuleForTest('resize', image, {
+        result = await execModuleForTest('resize', image, {
             displayWidth: 100,
             displayHeight: undefined
         }, {}, {stats: {
@@ -28,7 +31,7 @@ describe('Resize module', () => {
         }});
         assert.ok(!result.transforms.resized, 'Should not resize image');
 
-        result = await ModulesRunner.execModuleForTest('resize', image, {
+        result = await execModuleForTest('resize', image, {
             displayWidth: 0,
             displayHeight: 600
         }, {}, {stats: {
@@ -37,7 +40,7 @@ describe('Resize module', () => {
         }});
         assert.ok(!result.transforms.resized, 'Should not resize image');
 
-        result = await ModulesRunner.execModuleForTest('resize', image, {
+        result = await execModuleForTest('resize', image, {
             displayWidth: null,
             displayHeight: 100
         }, {}, {stats: {
@@ -60,7 +63,7 @@ describe('Resize module', () => {
     files.forEach(file => {
         it('should succeed resizing a ' + file.format, async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const resizeResult = await ModulesRunner.execModuleForTest('resize', image, {
+            const resizeResult = await execModuleForTest('resize', image, {
                 displayWidth: file.width / 10,
                 displayHeight: file.height / 10
             }, {
@@ -81,7 +84,7 @@ describe('Resize module', () => {
             assert.ok(resizeResult.transforms.resized.newFileSize < image.length);
             assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.newFileSize);
 
-            const newContentType = await ModulesRunner.execModuleForTest('contentType', resizeResult.transforms.resized.body);
+            const newContentType = await execModuleForTest('contentType', resizeResult.transforms.resized.body);
             assert.strictEqual(newContentType.stats.format, file.format);
 
             assert.strictEqual(resizeResult.offenders.imageScaledDown.naturalWidth, file.width);
@@ -97,7 +100,7 @@ describe('Resize module', () => {
     it ('should not resize an SVG file', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/svg-image.svg'));
         
-        const result = await ModulesRunner.execModuleForTest('resize', image, {
+        const result = await execModuleForTest('resize', image, {
             displayWidth: 200,
             displayHeight: 200
         }, {}, {stats: {
@@ -112,7 +115,7 @@ describe('Resize module', () => {
 
     it('should multiply display size with DPR', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
-        const resizeResult = await ModulesRunner.execModuleForTest('resize', image, {
+        const resizeResult = await execModuleForTest('resize', image, {
             displayWidth: 28,
             displayHeight: 43,
             dpr: 2
@@ -129,7 +132,7 @@ describe('Resize module', () => {
         assert.ok(resizeResult.transforms.resized.newFileSize < resizeResult.transforms.resized.fileSize);
         assert.strictEqual(resizeResult.transforms.resized.body.length, resizeResult.transforms.resized.newFileSize, 'New buffer saved');
 
-        const newContentType = await ModulesRunner.execModuleForTest('contentType', resizeResult.transforms.resized.body);
+        const newContentType = await execModuleForTest('contentType', resizeResult.transforms.resized.body);
         assert.strictEqual(newContentType.stats.format, 'jpg', 'Content type is still the same');
 
         assert.ok(resizeResult.offenders.imageScaledDown.newFileSize > 0);
@@ -140,7 +143,7 @@ describe('Resize module', () => {
 
     it('should report excessive image density and resize further', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
-        const res = await ModulesRunner.execModuleForTest('resize', image, {
+        const res = await execModuleForTest('resize', image, {
             displayWidth: 28,
             displayHeight: 43,
             dpr: 3

@@ -1,9 +1,12 @@
-const { describe, it } = require("@jest/globals");
+import { describe, it } from '@jest/globals';
 
-const ModulesRunner = require('../lib/modulesRunner'),
-    assert = require('assert'),
-    fs = require('fs').promises,
-    path = require('path');
+import {execModuleForTest} from '../lib/modulesRunner.js';
+import assert from 'assert';
+import fs from 'node:fs/promises';
+import * as path from 'path';
+import {fileURLToPath} from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 describe('Image size detection', () => {
@@ -21,7 +24,7 @@ describe('Image size detection', () => {
     files.forEach(file => {
         it('should detect the dimensions of a ' + file.format + ' image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const res = await ModulesRunner.execModuleForTest('dimensions', image, {}, {}, {stats: {format: file.format}});
+            const res = await execModuleForTest('dimensions', image, {}, {}, {stats: {format: file.format}});
             assert.strictEqual(res.stats.width, file.width, 'Width is correct');
             assert.strictEqual(res.stats.height, file.height, 'Height is correct');
         });
@@ -31,7 +34,7 @@ describe('Image size detection', () => {
 describe('Display Ratio detection', () => {
     it('should calculate the displayRatio properly on a 1x DPR', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
-        const res = await ModulesRunner.execModuleForTest('dimensions', image, {
+        const res = await execModuleForTest('dimensions', image, {
             displayWidth: 28,
             displayHeight: 43
         }, {}, {stats: {format: 'jpg'}});
@@ -39,7 +42,7 @@ describe('Display Ratio detection', () => {
     });
     it('should calculate the displayRatio properly on a 3x DPR', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
-        const res = await ModulesRunner.execModuleForTest('dimensions', image, {
+        const res = await execModuleForTest('dimensions', image, {
             displayWidth: 28,
             displayHeight: 43,
             dpr: 3
@@ -51,7 +54,7 @@ describe('Display Ratio detection', () => {
 describe('Display Density detection', () => {
     it('should calculate the displayDensity properly', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
-        const res = await ModulesRunner.execModuleForTest('dimensions', image, {
+        const res = await execModuleForTest('dimensions', image, {
             displayWidth: 28,
             displayHeight: 43,
             dpr: 3

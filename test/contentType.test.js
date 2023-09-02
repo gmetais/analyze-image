@@ -1,9 +1,12 @@
-const { describe, it } = require("@jest/globals");
+import { describe, it } from '@jest/globals';
 
-const ModulesRunner = require('../lib/modulesRunner'),
-    assert = require('assert'),
-    fs = require('fs').promises,
-    path = require('path');
+import {execModuleForTest} from '../lib/modulesRunner.js';
+import assert from 'assert';
+import fs from 'node:fs/promises';
+import * as path from 'path';
+import {fileURLToPath} from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 describe('Image type detection', () => {
@@ -21,19 +24,19 @@ describe('Image type detection', () => {
     files.forEach(file => {
         it('should detect a ' + file.format + ' image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const res = await ModulesRunner.execModuleForTest('contentType', image);
+            const res = await execModuleForTest('contentType', image);
             assert.strictEqual(res.stats.mimeType, file.mimeType, 'Mime type is correct');
             assert.strictEqual(res.stats.format, file.format, 'Format is correct');
         });
     });
 
     it('should return undefined on unknown file format', async () => {
-        let res = await ModulesRunner.execModuleForTest('contentType', 'foo');
+        let res = await execModuleForTest('contentType', 'foo');
         assert.strictEqual(res.stats.mimeType, undefined, 'Mime type is undefined');
         assert.strictEqual(res.stats.format, undefined, 'Format is undefined');
 
         const file = await fs.readFile(path.resolve(__dirname, './images/pdf-file.pdf'));
-        res = await ModulesRunner.execModuleForTest('contentType', file);
+        res = await execModuleForTest('contentType', file);
         assert.strictEqual(res.stats.mimeType, undefined, 'Mime type is undefined');
         assert.strictEqual(res.stats.format, undefined, 'Format is undefined');
     });

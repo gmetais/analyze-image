@@ -1,9 +1,12 @@
-const { describe, it } = require("@jest/globals");
+import { describe, it } from '@jest/globals';
 
-const analyzeImage = require('../.'),
-    assert = require('assert'),
-    fs = require('fs').promises,
-    path = require('path');
+import analyzeImage, * as analyzeImageModule from '../lib/index.js';
+import assert from 'assert';
+import fs from 'node:fs/promises';
+import * as path from 'path';
+import {fileURLToPath} from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 describe('Image parameter', () => {
@@ -12,31 +15,31 @@ describe('Image parameter', () => {
             try {
                 await analyzeImage(42);
             } catch(error) {
-                assert.strictEqual(error.code, analyzeImage.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
+                assert.strictEqual(error.code, analyzeImageModule.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
             }
 
             try {
                 await analyzeImage(true);
             } catch(error) {
-                assert.strictEqual(error.code, analyzeImage.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
+                assert.strictEqual(error.code, analyzeImageModule.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
             }
 
             try {
                 await analyzeImage({});
             } catch(error) {
-                assert.strictEqual(error.code, analyzeImage.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
+                assert.strictEqual(error.code, analyzeImageModule.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
             }
 
             try {
                 await analyzeImage(undefined);
             } catch(error) {
-                assert.strictEqual(error.code, analyzeImage.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
+                assert.strictEqual(error.code, analyzeImageModule.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
             }
         });
 
         it('should fail loading improper format in a Promise way', async () => {
             analyzeImage(42).catch(function(error) {
-                assert.strictEqual(error.code, analyzeImage.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
+                assert.strictEqual(error.code, analyzeImageModule.EXIT_IMAGE_PASSED_IS_INVALID, 'Error code 253 is returned');
             });
         });
     });
@@ -46,7 +49,7 @@ describe('Image parameter', () => {
             try {
                 await analyzeImage('');
             } catch(error) {
-                assert.strictEqual(error.code, analyzeImage.EXIT_EMPTY_IMAGE, 'Error code 252 is returned');
+                assert.strictEqual(error.code, analyzeImageModule.EXIT_EMPTY_IMAGE, 'Error code 252 is returned');
             }
         });
 
@@ -54,7 +57,7 @@ describe('Image parameter', () => {
             try {
                 await analyzeImage(Buffer.from([]));
             } catch(error) {
-                assert.strictEqual(error.code, analyzeImage.EXIT_EMPTY_IMAGE, 'Error code 252 is returned');
+                assert.strictEqual(error.code, analyzeImageModule.EXIT_EMPTY_IMAGE, 'Error code 252 is returned');
             }
         });
     });

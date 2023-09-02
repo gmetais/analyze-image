@@ -1,16 +1,19 @@
-const { describe, it } = require("@jest/globals");
+import { describe, it } from '@jest/globals';
 
-const ModulesRunner = require('../lib/modulesRunner'),
-    assert = require('assert'),
-    fs = require('fs').promises,
-    path = require('path')
-    sharp = require('sharp');
+import {execModuleForTest} from '../lib/modulesRunner.js';
+import assert from 'assert';
+import fs from 'node:fs/promises';
+import * as path from 'path';
+import sharp from 'sharp';
+import {fileURLToPath} from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 describe('Reformat module', () => {
     it ('should not reformat an SVG', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/svg-image.svg'));
-        const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
+        const result = await execModuleForTest('reformat', image, {}, {}, {stats: {
             format: 'svg',
             fileSize: image.length
         }});
@@ -18,7 +21,7 @@ describe('Reformat module', () => {
     });
     it ('should not reformat an AVIF', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/avif-image.avif'));
-        const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
+        const result = await execModuleForTest('reformat', image, {}, {}, {stats: {
             format: 'avif',
             fileSize: image.length
         }});
@@ -26,7 +29,7 @@ describe('Reformat module', () => {
     });
     it ('should not reformat an animated WebP', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/animated.webp'));
-        const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {}, {stats: {
+        const result = await execModuleForTest('reformat', image, {}, {}, {stats: {
             format: 'webp',
             fileSize: image.length,
             animated: true
@@ -44,7 +47,7 @@ describe('Reformat module', () => {
     files.forEach(file => {
         it('should succesfully reformat a ' + file.format + ' to webp', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {removeBuffersFromTransforms: false}, {stats: {
+            const result = await execModuleForTest('reformat', image, {}, {removeBuffersFromTransforms: false}, {stats: {
                 format: file.format,
                 fileSize: image.length,
                 animated: file.animated
@@ -55,7 +58,7 @@ describe('Reformat module', () => {
             assert.strictEqual(result.transforms.webpEncoded.body.length, result.transforms.webpEncoded.newFileSize);
             assert.ok(result.transforms.webpEncoded.fileSize > 0);
 
-            const newContentType = await ModulesRunner.execModuleForTest('contentType', result.transforms.webpEncoded.body);
+            const newContentType = await execModuleForTest('contentType', result.transforms.webpEncoded.body);
             assert.strictEqual(newContentType.stats.format, 'webp', 'Content type is webp');
 
             assert.ok(result.offenders.imageOldFormat.currentFormat, files.format);
@@ -74,7 +77,7 @@ describe('Reformat module', () => {
     files.forEach(file => {
         it('should succesfully reformat a ' + file.format + ' to avif', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const result = await ModulesRunner.execModuleForTest('reformat', image, {}, {removeBuffersFromTransforms: false}, {stats: {
+            const result = await execModuleForTest('reformat', image, {}, {removeBuffersFromTransforms: false}, {stats: {
                 format: file.format,
                 fileSize: image.length,
                 animated: file.animated
@@ -85,7 +88,7 @@ describe('Reformat module', () => {
             assert.strictEqual(result.transforms.avifEncoded.body.length, result.transforms.avifEncoded.newFileSize);
             assert.ok(result.transforms.avifEncoded.fileSize > 0);
 
-            const newContentType = await ModulesRunner.execModuleForTest('contentType', result.transforms.avifEncoded.body);
+            const newContentType = await execModuleForTest('contentType', result.transforms.avifEncoded.body);
             assert.strictEqual(newContentType.stats.format, 'avif', 'Content type is webp');
 
             assert.ok(result.offenders.imageOldFormat.currentFormat, files.format);

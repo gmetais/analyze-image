@@ -6,9 +6,9 @@ Deeply inspired by https://github.com/macbre/analyze-css
 ## Promise example
 
 ```js
-const analyzeImage = require('analyze-image');
+import analyzeImage from 'analyze-image';
 const browserData = {
-    html: '<img srcset="image1.jpg 400w, image2.jpg 800w" sizes="50vw">'
+    html: '<img srcset="image1.jpg 400w, image2.jpg 800w" sizes="50vw">',
     displayWidth: 300,
     displayHeight: 200,
     viewportWidth: 1200,
@@ -21,7 +21,7 @@ const options = {
 const file = // An image file as a Buffer or a String (base64 encoded image or textual SVG image)
 // Supported formats are jpg, png, webp, avif, gif, svg
 
-analyzeImage(image, browserData, options)
+analyzeImage(file, browserData, options)
 
     .then(function(result) {
         console.log("SUCESS:");
@@ -37,9 +37,9 @@ analyzeImage(image, browserData, options)
 ## Async/await example
 
 ```js
-const analyzeImage = require('analyze-image');
+import analyzeImage from 'analyze-image';
 const browserData = {
-    html: '<img src="image.jpg">'
+    html: '<img src="image.jpg">',
     displayWidth: 300,
     displayHeight: 200
 };
@@ -49,7 +49,7 @@ const options = {
 const file = // An image file as a Buffer or a String (base64 encoded image or textual SVG image)
 
 try {
-    const result = await analyzeImage(image, browserData, options);
+    const result = await analyzeImage(file, browserData, options);
     console.log("SUCESS:");
     console.log(result);
 
@@ -185,5 +185,7 @@ Result is an object with the following properties:
 
 ## Error codes
 
+| Code | Description |
+| ---- | ----------- |
 | 252 | the provided image is empty |
 | 253 | the provided image is not a valid image |

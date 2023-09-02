@@ -1,11 +1,14 @@
-const { describe, it } = require("@jest/globals");
+import { describe, it } from '@jest/globals';
 
-const ModulesRunner = require('../lib/modulesRunner'),
-    optimizeModule = require('../lib/modules/optimize'),
-    assert = require('assert'),
-    fs = require('fs').promises,
-    path = require('path')
-    sharp = require('sharp');
+import {execModuleForTest} from '../lib/modulesRunner.js';
+import {optimizeImage} from '../lib/modules/optimize.js';
+import assert from 'assert';
+import fs from 'node:fs/promises';
+import * as path from 'path';
+import sharp from 'sharp';
+import {fileURLToPath} from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 describe('Image optimization tools', () => {
@@ -22,10 +25,10 @@ describe('Image optimization tools', () => {
     files.forEach(file => {
         it('should re-encode a ' + file.format + ' image', async () => {
             const image = await fs.readFile(path.resolve(__dirname, './images/', file.name));
-            const newImage = await optimizeModule.optimizeImage(image, file.format, {});
+            const newImage = await optimizeImage(image, file.format, {});
             assert.ok(newImage.length > 1, 'Image was re-encoded');
 
-            const newContentType = await ModulesRunner.execModuleForTest('contentType', newImage);
+            const newContentType = await execModuleForTest('contentType', newImage);
             assert.strictEqual(file.format, newContentType.stats.format, 'Content type is still the same');
         });
     });
@@ -34,7 +37,7 @@ describe('Image optimization tools', () => {
 describe('Optimize module', () => {
     it('should succeed optimizing a jpg', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
-        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+        const result = await execModuleForTest('optimize', image, {}, {}, {stats: {
             format: 'jpg',
             width: 285,
             height: 427,
@@ -47,7 +50,7 @@ describe('Optimize module', () => {
 
     it('should not add an offender if gain is not good enough', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/jpeg-image.jpg'));
-        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {jpgQuality: 100}, {stats: {
+        const result = await execModuleForTest('optimize', image, {}, {jpgQuality: 100}, {stats: {
             format: 'jpg',
             fileSize: image.length
         }});
@@ -57,7 +60,7 @@ describe('Optimize module', () => {
 
     it('should succeed optimizing a png', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/png-image.png'));
-        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+        const result = await execModuleForTest('optimize', image, {}, {}, {stats: {
             format: 'png',
             fileSize: image.length
         }});
@@ -68,7 +71,7 @@ describe('Optimize module', () => {
 
     it('should succeed optimizing a webp', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/webp-image.webp'));
-        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+        const result = await execModuleForTest('optimize', image, {}, {}, {stats: {
             format: 'webp',
             fileSize: image.length
         }});
@@ -79,7 +82,7 @@ describe('Optimize module', () => {
 
     it('should succeed optimizing an animated webp', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/animated.webp'));
-        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {webpQuality: 1}, {stats: {
+        const result = await execModuleForTest('optimize', image, {}, {webpQuality: 1}, {stats: {
             format: 'webp',
             fileSize: image.length
         }});
@@ -93,7 +96,7 @@ describe('Optimize module', () => {
     // TODO find an unoptimized test GIF!
     /*it('should succeed optimizing a gif', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/animated.webp'));
-        const result = await ModulesRunner.execModuleForTest('optimize', image, {}, {}, {stats: {
+        const result = await execModuleForTest('optimize', image, {}, {}, {stats: {
             format: 'gif',
             fileSize: image.length
         }});
@@ -104,7 +107,7 @@ describe('Optimize module', () => {
 
     it('should succeed optimizing an svg', async () => {
         const image = await fs.readFile(path.resolve(__dirname, './images/svg-image.svg'));
-        const result = await ModulesRunner.execModuleForTest('optimize', image.toString(), {}, {}, {stats: {
+        const result = await execModuleForTest('optimize', image.toString(), {}, {}, {stats: {
             format: 'svg',
             fileSize: image.length
         }});
